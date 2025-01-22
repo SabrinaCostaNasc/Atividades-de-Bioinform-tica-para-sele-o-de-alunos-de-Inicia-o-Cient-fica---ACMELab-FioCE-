@@ -1,0 +1,63 @@
+>>>Atividade 1<<<
+
+Resolução_
+
+A- O número de vezes que cada um dos nucleotídeos 'A', 'C', 'G' e 'T' aparecem.
+
+A-(juntamente com o código que foi utilizado)
+
+# Função para contar nucleotídeos em uma sequência de DNA
+def contar_nucleotideos(dna):
+    # Inicializa um dicionário para armazenar a contagem de cada nucleotídeo
+    contagem = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+    
+    # Percorre a sequência de DNA
+    for nucleotideo in dna.upper():  # Converte para maiúsculo para evitar problemas com letras minúsculas
+        if nucleotideo in contagem:
+            contagem[nucleotideo] += 1
+    
+    return contagem
+
+# Sequência de DNA
+dna_sequence = (
+    "TTTATAGTAGAAGAGGTCCAAGCGGGAACAGAACTGCTAACCCAGCCCCATCCTGTCCTTACACAAAGATGCTGCGGTC"
+    "TTGATCCACCTCGCTCGGCCACTCGTTCACCCCGTCTAAGTTTGCGCGGAACTAACCAAAAGATGACAACAAGGCGGGA"
+    "CGAACCCTTTACGCTGTCACTCCATAAAACATAGTTTTAATACCGGGTCTCTCAAAAAAGTATGCTGGGTGCATCGTTC"
+    "CTTGGTTTAGTAGCTCCTCCGTTTCGGGCTCGGATGAGCCTCGGAATCCTAAGGGTAAATGCGAAAGATCCCACGGATA"
+    "AGGTCACTTTAACCTGTTACCCAACCAAGCCGGGCACGCGCGGTCTCCCGGATGACATCTCGGGAGCCTCACGAATCAA"
+    "GGCCGCAATGCAAGAGAGGCTTTACGCCACGGTAGAGGTTACACGTTTCCCGGGGCAGGATCCCGTCAGAGGTTTCCTT"
+    "AACGAACTCACTCCAGGATACAGTTCCATGCACTAGGGGTCTCGGAGTCAGGCGCAACCGGCGCAAAGTAAACGAGTGG"
+    "TCGAAAGCGGCGATTGTTGTCGATGGAGGGTTCTTTAACATACTTACGGCCTTAGCAGTTCATACACCCTCTACTCAAG"
+    "AGGTTGCAGCGAACTTAGTTCCCAGTAATGCACACTAGTTGACCTCATCCCTAGAGTGACAACTCACTATAGAAGTCGT"
+    "CGTTTTGCTAATCGATCCCGTCGATCCGATGCAAACTTACCCATTCACGCTCGCACATCGGTTTCACAACGGATCGTCA"
+    "TACTCCAGTGAGACGCGGATGGGCGTCAAGTGGTTG"
+)
+
+# Chama a função para contar os nucleotídeos
+resultado = contar_nucleotideos(dna_sequence)
+
+# Exibe o resultado
+print("Contagem de nucleotídeos:")
+for nucleotideo, count in resultado.items():
+    print(f"{nucleotideo}: {count}")
+
+
+Resultado 
+
+Contagem de nucleotídeos:
+A: 209
+C: 227
+G: 201
+T: 189
+
+>>>Utilizando O Software Mega<<<
+
+Data Filename: PhyloAnalysis.mdsx
+Data Title: Phylogenetic Analysis
+Nucleotide Frequencies
+Sites Used: All selected
+All frequencies are given in percent.
+Domain: Data
+             T(U)   C     A     G    Total  T-1   C-1   A-1   G-1  Pos #1  T-2   C-2   A-2   G-2  Pos #2  T-3   C-3   A-3   G-3  Pos #3 
+Sequence 1   22.9  27.5  25.3  24.3   826  18.1  29.7  25.4  26.8   276  24.0  26.5  24.4  25.1   275  26.5  26.2  26.2  21.1   275 
+Sequence 1   22.9  27.5  25.3  24.3   826  18.1  29.7  25.4  26.8   276  24.0  26.5  24.4  25.1   275  26.5  26.2  26.2  21.1   275 
