@@ -1,8 +1,10 @@
 >>>Atividade 2<<<
 
+Resolução
 
+Calcule a Distancia de Hamming
 
-
+2-(Da sequencia C em relação a A)
 
 def calcular_distancia_hamming(seq_a, seq_c):
     """
