@@ -1,9 +1,11 @@
+>>>Atividade 1<<<
 
+Resolução
 
+B) Um novo arquivo com a sequência de RNA transcrita.
 
+B-(juntamente com o código que foi utilizado)
 
-
-B-
 # Função para converter uma sequência de DNA em RNA
 def dna_para_rna(dna):
     # Substitui "T" por "U" para gerar a sequência de RNA
