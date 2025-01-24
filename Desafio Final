@@ -1,0 +1,188 @@
+>>>Desafio Final<<<
+
+
+>>>Relatório Detalhado da Pipeline para Montagem de Genomas Virais<<<
+
+_Descrição de Cada Etapa da Pipeline e Decisões Tomadas_
+
+1. Controle de Qualidade e Corte de Adaptadores
+Ferramentas Utilizadas: FastQC e fastp
+
+Nesta etapa, utilizei o FastQC para analisar a qualidade inicial das leituras e o fastp para realizar o corte de adaptadores e a filtragem de leituras de baixa qualidade. As seguintes configurações foram aplicadas:
+    • Trim Front e Tail: Remoção de 10 bases no início e no final de cada leitura para eliminar bases de baixa qualidade.
+    • Qualidade Mínima: Phred score de 20, garantindo alta precisão nas chamadas de bases.
+    • Comprimento Mínimo: Leituras com menos de 50 bases foram descartadas, pois podem impactar negativamente nas etapas posteriores de montagem.
+Decisão: O uso do FastQC foi baseado na sua aceitação na comunidade bioinformática como ferramenta robusta para avaliação rápida de qualidade. Já o fastp foi escolhido pela sua versatilidade e velocidade em realizar tanto a remoção de adaptadores quanto a filtragem.
+
+2. Remoção de Contaminação
+Ferramenta Utilizada: BBduk
+
+BBduk foi selecionado para remover contaminação de adaptadores e outras sequências não desejadas. Os parâmetros utilizados incluem:
+    • ref=adapters: Banco de dados de referência com sequências conhecidas de adaptadores.
+    • ktrim=r: Corte a partir do lado direito das sequências.
+    • k=23 e mink=11: Tamanho dos k-mers usados na correspondência, equilibrando sensibilidade e especificidade.
+    • hdist=1: Permite até uma discrepância nos k-mers, garantindo robustez contra erros de sequenciamento.
+Decisão: BBduk foi escolhido por sua eficiência em lidar com grandes conjuntos de dados e pela flexibilidade nos parâmetros de configuração para remoção de contaminação.
+
+3. Montagem do Genoma
+Ferramenta Utilizada: SPAdes
+
+O SPAdes foi utilizado para montar as leituras limpas em contigs. Ele foi escolhido por ser uma ferramenta amplamente reconhecida para montagem de genomas, especialmente eficaz em sequências curtas como as produzidas por tecnologias de sequenciamento Illumina.
+Decisão: A escolha do SPAdes foi baseada em sua capacidade de produzir montagens de alta qualidade para genomas virais e no suporte a diferentes formatos de entrada.
+
+4. Análise de Qualidade da Montagem
+Métrica Calculada: N50
+
+A qualidade da montagem foi avaliada usando a métrica N50, que mede o comprimento do menor contig no conjunto dos maiores contigs que juntos representam pelo menos 50% do comprimento total da montagem. Essa métrica foi escolhida por ser amplamente usada para avaliar a continuidade de montagens genômicas.
+
+Limitações Observadas
+
+1. Curtos Contigs: Algumas regiões do genoma podem estar sub-representadas devido a baixa cobertura.
+    2. Remoção de Contaminação: O uso de um banco de referência limitado pode deixar algumas contaminações residuais.
+    3. Parâmetros Padronizados: Nem todos os parâmetros foram otimizados para o conjunto de dados específico utilizado.
+
+Ideias de Melhorias para Futuro Desenvolvimento
+    1. Refinamento de Parâmetros: Ajustar os parâmetros de corte e montagem com base nas características do conjunto de dados.
+    2. Aumentar o Banco de Referência: Incluir mais sequências no banco de referência para remoção de contaminação.
+    3. Avaliar Outras Ferramentas: Testar ferramentas alternativas, como QUAST para avaliação da montagem.
+    4. Cobertura Profunda: Garantir que as regiões sub-representadas tenham maior cobertura por meio de re-sequenciamento.
+
+
+>>>código montado<<<
+
+import os
+import subprocess
+
+>>from Bio import SeqIO
+
+# Defina caminhos para diretórios de entrada e saída
+INPUT_DIR = "./fastq_input"
+OUTPUT_DIR = "./pipeline_output"
+QUALITY_DIR = os.path.join(OUTPUT_DIR, "quality_check")
+ASSEMBLY_DIR = os.path.join(OUTPUT_DIR, "assembly")
+
+# Certifique-se de que existam diretórios de saída
+os.makedirs(QUALITY_DIR, exist_ok=True)
+os.makedirs(ASSEMBLY_DIR, exist_ok=True)
+
+# 1. Controle de qualidade e corte do adaptador
+def quality_control(input_dir, output_dir):
+    """Runs quality control and adapter trimming.
+
+   Esta função realiza controle de qualidade usando a ferramenta FastQC para garantir a entrada
+    as leituras atendem a limites de qualidade específicos. A decisão de usar FastQC foi baseada
+    na sua ampla aceitação na comunidade de bioinformática e na sua capacidade
+    para identificar rapidamente problemas como bases de baixa qualidade, contaminação do adaptador,
+    e distribuição desigual de nucleotídeos. Aqui, utilizamos fastp para adaptador
+    recorte e filtragem, com os seguintes parâmetros:
+
+    - `--trim_front1` e `--trim_tail1`: Apara 10 bases da frente e da cauda
+      de cada leitura para remover possíveis bases de baixa qualidade.
+    - `--qualified_quality_phred`: Define a pontuação phred mínima para 20, garantindo
+      alta precisão de chamada de base.
+    - `--length_required`: Retém apenas leituras maiores que 50 bases para evitar
+      sequências curtas e de baixa qualidade impactam as análises posteriores.
+
+    """
+    print("Running quality control...")
+    for fastq_file in os.listdir(input_dir):
+        if fastq_file.endswith(".fastq"):
+            input_path = os.path.join(input_dir, fastq_file)
+            output_path = os.path.join(output_dir, f"trimmed_{fastq_file}")
+            subprocess.run([
+                "fastp", "-i", input_path, "-o", output_path,
+                "--trim_front1", "10", "--trim_tail1", "10",
+                "--qualified_quality_phred", "20", "--length_required", "50"
+            ])
+
+# 2. Remoção de contaminações
+def remove_contamination(trimmed_dir, cleaned_dir):
+    """Remove sequências contaminantes comparando com um banco de dados de referência.
+
+    Esta função utiliza BBduk para remoção de contaminação, escolhida por sua eficiência
+    e versatilidade no manuseio de sequências de adaptadores e outras leituras de contaminantes.
+    BBduk compara sequências com um arquivo de referência (por exemplo, adaptadores) usando o
+    seguintes parâmetros:
+
+    - `ref=adapters`: Especifica o banco de dados de referência que contém o adaptador conhecido
+      sequências para filtrar.
+    - `ktrim=r`: Indica que as sequências correspondentes devem ser cortadas do
+      extremidade direita das leituras.
+    - `k = 23`: Define o tamanho k-mer para correspondência de sequência, balanceamento de sensibilidade
+      e especificidade.
+    - `mink=11`: Permite que k-mers menores sejam usados ​​quando as correspondências são ambíguas,
+      melhorando a detecção de sequências adaptadoras mais curtas.
+    - `hdist=1`: Permite uma incompatibilidade na correspondência k-mer para contabilizar o sequenciamento
+      erros, aumentando a robustez na remoção de contaminação.
+
+    O BBduk foi selecionado devido à sua capacidade de lidar com grandes conjuntos de dados de forma eficiente
+    e sua flexibilidade na definição de parâmetros para personalizar a remoção de contaminação
+    com base nas características do conjunto de dados""
+
+    """
+    print("Removing potential contaminations...")
+    os.makedirs(cleaned_dir, exist_ok=True)
+    for trimmed_file in os.listdir(trimmed_dir):
+        if trimmed_file.startswith("trimmed_") and trimmed_file.endswith(".fastq"):
+            input_path = os.path.join(trimmed_dir, trimmed_file)
+            cleaned_path = os.path.join(cleaned_dir, trimmed_file.replace("trimmed_", "cleaned_"))
+            subprocess.run([
+                "bbduk.sh", "in=" + input_path, "out=" + cleaned_path,
+                "ref=adapters", "ktrim=r", "k=23", "mink=11", "hdist=1"
+            ])
+
+# 3. Montagem do Genoma
+def assemble_genome(cleaned_dir, assembly_dir):
+    """Assembles genome sequences using SPAdes."""
+    print("Assembling genome...")
+    for cleaned_file in os.listdir(cleaned_dir):
+        if cleaned_file.startswith("cleaned_") and cleaned_file.endswith(".fastq"):
+            input_path = os.path.join(cleaned_dir, cleaned_file)
+            sample_name = cleaned_file.replace("cleaned_", "").replace(".fastq", "")
+            output_path = os.path.join(assembly_dir, sample_name)
+            subprocess.run([
+                "spades.py", "-s", input_path, "-o", output_path
+            ])
+
+# 4. Analise a qualidade da montagem
+def analyze_assembly(assembly_dir):
+    """Analisa a qualidade da montagem e gera métricas resumidas."""
+    print("Analyzing assembly quality...")
+    for assembly in os.listdir(assembly_dir):
+        contig_path = os.path.join(assembly_dir, assembly, "contigs.fasta")
+        if os.path.exists(contig_path):
+            contigs = list(SeqIO.parse(contig_path, "fasta"))
+            total_length = sum(len(contig) for contig in contigs)
+            n50 = calculate_n50([len(contig) for contig in contigs])
+            print(f"Sample: {assembly}")
+            print(f"  Number of Contigs: {len(contigs)}")
+            print(f"  Total Length: {total_length}")
+            print(f"  N50: {n50}")
+
+def calculate_n50(lengths):
+    """Calcula a métrica N50 a partir de uma lista de comprimentos contig.
+
+    O N50 é uma métrica comumente usada na avaliação da montagem do genoma. Está definido
+    como o comprimento do contig mais curto no conjunto dos maiores contigs que juntos
+    perfazem pelo menos 50% do comprimento total da montagem. Isso fornece insights sobre
+    a continuidade da montagem: valores mais altos de N50 indicam menos contigs e mais longos,
+    que são geralmente preferíveis em montagens de genoma.
+
+    """
+    sorted_lengths = sorted(lengths, reverse=True)
+    cumulative_length = 0
+    total_length = sum(sorted_lengths)
+    for length in sorted_lengths:
+        cumulative_length += length
+        if cumulative_length >= total_length / 2:
+            return length
+
+# Run the pipeline
+if __name__ == "__main__":
+    quality_control(INPUT_DIR, QUALITY_DIR)
+    CLEANED_DIR = os.path.join(OUTPUT_DIR, "cleaned_reads")
+    remove_contamination(QUALITY_DIR, CLEANED_DIR)
+    assemble_genome(CLEANED_DIR, ASSEMBLY_DIR)
+    analyze_assembly(ASSEMBLY_DIR)
+
+    print("Pipeline completed.")
