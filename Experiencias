@@ -1,0 +1,51 @@
+>>>Ponto de Vista<<<
+
+# Relato de Experiência
+
+   ExperienciaComCodigos:
+    def __init__(self):
+        self.atividades = []
+
+    def atividade_1(self):
+        print("⚡ Atividade 1: O começo da jornada ⚡")
+        print("Explorar o mundo dos números e códigos foi como abrir a porta do Salão Comunal da programação.")
+        print("Pela primeira vez, consegui rodar sozinha um código em Python! 🐍✨")
+        print("Antes, dependia de muita ajuda, mas dessa vez me virei como uma verdadeira Hermione.")
+        print("Tudo isso porque meu colega deixou claro: 'Se você quer a bolsa, precisa lutar por ela.'")
+        self.atividades.append("Atividade 1 concluída com sucesso e orgulho de iniciante!")
+
+    def atividade_2(self):
+        print("\n🛡️ Atividade 2: O desafio aumenta 🛡️")
+        print("Essa etapa foi como enfrentar um Trasgo montanhês no banheiro feminino.")
+        print("Mais desafiadora, mas tão emocionante quanto! Aprendi a valorizar cada erro.")
+        print("Foi incrível ver o progresso, mesmo que a lógica parecesse, às vezes, um labirinto mágico.")
+        self.atividades.append("Atividade 2 concluída com perseverança!")
+
+    def atividade_3(self):
+        print("\n💻 Atividade 3: A noite que não acabou 💻")
+        print("Essa foi intensa! Passei uma noite inteira tentando entender o que havia de errado no meu código.")
+        print("Era como tentar decifrar o Mapa do Maroto sem as palavras mágicas. 🗺️")
+        print("Embora não tenha conseguido resolver tudo, senti o peso da responsabilidade e aprendi muito com isso.")
+        self.atividades.append("Atividade 3 concluída com aprendizado valioso, mesmo sem solução final!")
+
+    def desafio_final(self):
+        print("\n🔥 Desafio Final: Criando o pipeline mágico 🔥")
+        print("Criar o pipeline foi como lutar na Batalha de Hogwarts.")
+        print("Mesmo sem conseguir chegar ao final, cada linha de código era um feitiço lançado com entusiasmo.")
+        print("Senti como se estivesse duelando com Voldemort, e, no final, apesar de não ter vencido, fui uma heroína do meu próprio caminho.")
+        self.atividades.append("Desafio Final: Missão cumprida (em espírito de batalha)!")
+
+    def relato_final(self):
+        print("\n✨ Relato Final ✨")
+        for atividade in self.atividades:
+            print(f"- {atividade}")
+        print("\nAssim, como Harry ao vencer desafios em Hogwarts, me sinto mais forte e pronta para a próxima aventura!")
+        print("E lembre-se: 'A diferença entre sucesso e fracasso é apenas a persistência.' – Alvo Dumbledore 🧙‍♂️")
+
+# Criando o relato
+minha_experiencia = ExperienciaComCodigos()
+minha_experiencia.atividade_1()
+minha_experiencia.atividade_2()
+minha_experiencia.atividade_3()
+minha_experiencia.desafio_final()
+minha_experiencia.relato_final()
